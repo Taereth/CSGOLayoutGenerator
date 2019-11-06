@@ -33,12 +33,20 @@ function setup() {
   defineSpawns();
   defineLongPaths();
 
+  //LongPaths
+
+  randomPath(rooms[1].vector,rooms[2].vector);
+  randomPath(rooms[1].vector,rooms[3].vector);
+  randomPath(rooms[0].vector,rooms[5].vector);
+  randomPath(rooms[0].vector,rooms[4].vector);
+  randomPath(rooms[4].vector,rooms[6].vector);
+  randomPath(rooms[5].vector,rooms[7].vector);
+  randomPath(rooms[7].vector,rooms[2].vector);
+  randomPath(rooms[6].vector,rooms[3].vector);
+
 }
 
 function draw() {
-
-  console.log(randN(1,6));
-
 
   stroke(255);
   background(0);
@@ -56,7 +64,12 @@ function draw() {
 */
   for(var i=0;i<rooms.length;i++){
     rooms[i].draw();
+    
     }
+
+
+
+
 
 }
 
@@ -247,5 +260,61 @@ function saveThumb(w, h) {
 
 function randN(x,y){
   return (random(x,y)+random(x,y))/2;
+
+}
+
+//random Path between two points
+
+function randomPath(start,end){
+
+  var lineLen =      50;            // length of segments
+  var maxAngle =     radians(90);   // range of random angle towards end
+  var noiseInc =     5;          // increment in Perlin noise
+  var minDistToEnd = 50;            // how close to the end before we quit?
+
+  var noiseOffset = 0;
+
+  // create random starting point
+  var start = start;
+  var current = start;
+
+  // start line
+
+
+  // run until we hit the endpoint!
+  var counter=0;
+  while (true) {
+
+    // compute angle b/w current position and the end point
+    var xDist = end.x - current.x;
+    var yDist = end.y - current.y;
+    var between = atan2(yDist, xDist);
+
+    // use Perlin noise to compute a random value (0-1), change
+    // to range of the maxAngle (this makes the line vary instead of
+    // heading straight towards the endpoint!)
+    var newAngle = between + (noise(noiseOffset) * maxAngle - maxAngle/2);
+
+    // calculate new x/y position based on the angle, draw a line
+    var xps = current.x + cos(newAngle) * lineLen;
+    var yps = current.y + sin(newAngle) * lineLen;
+
+    var connection = new Room(xps,yps,20,20,"connection");
+    rooms.push(connection);
+
+    // update current position to the end of the line, figure
+    // out how far we have left to go
+    current = createVector(xps,yps);
+    var distLeft = current.dist(end);
+
+    // if we're near the endpoint, draw a line to the end and quit
+    if (distLeft <= minDistToEnd) {
+      break;
+    }
+
+    // update count and Perlin noise variables, continue
+    counter += 1;
+    noiseOffset += noiseInc;
+  }
 
 }
