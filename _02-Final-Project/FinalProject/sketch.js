@@ -64,7 +64,7 @@ function draw() {
 */
   for(var i=0;i<rooms.length;i++){
     rooms[i].draw();
-    
+
     }
 
 
@@ -267,7 +267,7 @@ function randN(x,y){
 
 function randomPath(start,end){
 
-  var lineLen =      50;            // length of segments
+  var lineLen =      20;            // length of segments
   var maxAngle =     radians(90);   // range of random angle towards end
   var noiseInc =     5;          // increment in Perlin noise
   var minDistToEnd = 50;            // how close to the end before we quit?
