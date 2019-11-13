@@ -32,6 +32,7 @@ function setup() {
   //Define definitive locations of TSpawn,CTSpawn,BombSiteA,BombSiteB
   defineSpawns();
   defineLongPaths();
+  defineMid();
 
   //LongPaths
 
@@ -43,6 +44,10 @@ function setup() {
   randomPath(rooms[5].vector,rooms[7].vector);
   randomPath(rooms[7].vector,rooms[2].vector);
   randomPath(rooms[6].vector,rooms[3].vector);
+  randomPath(rooms[6].vector,rooms[8].vector);
+  randomPath(rooms[7].vector,rooms[8].vector);
+  randomPath(rooms[0].vector,rooms[8].vector);
+  randomPath(rooms[1].vector,rooms[8].vector);
 
 }
 
@@ -125,6 +130,17 @@ function defineLongPaths(){
 
   rooms.push(TLongBEdge,TLongAEdge,LongBEdgeBSite,LongAEdgeASite);
 
+}
+
+function defineMid(){
+  var TSpawn = rooms[0];
+  var CTSpawn = rooms[1];
+  var TLongAEdgeASite = rooms[7];
+  var TLongBEdgeBSite = rooms[6];
+
+  var Mid = createVector(randN(TLongAEdgeASite.vector.x,TLongBEdgeBSite.vector.x),randN(TSpawn.vector.y,CTSpawn.vector.y));
+  Mid = new Room(Mid.x,Mid.y,20,20,"Mid");
+  rooms.push(Mid);
 }
 
 
