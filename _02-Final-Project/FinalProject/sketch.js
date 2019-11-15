@@ -69,6 +69,8 @@ function draw() {
 */
   for(var i=0;i<rooms.length;i++){
     rooms[i].draw();
+    stroke("black");
+    text(i,rooms[i].vector.x,rooms[i].vector.y);
 
     }
 
@@ -152,7 +154,7 @@ function drawTestLines(){
 class Room{
   constructor(centerx,centery,width,height,designation){
     this.vector=createVector(centerx,centery);  //center position of room
-    this.width=width; //width of room
+    this.width=width; //width of room //TODO CHANGE WIDTH
     this.height=height; //height of room
     this.designation=designation; //Type
     this.x1=this.vector.x-width/2;  //edge coordinates
@@ -315,7 +317,7 @@ function randomPath(start,end){
     var xps = current.x + cos(newAngle) * lineLen;
     var yps = current.y + sin(newAngle) * lineLen;
 
-    var connection = new Room(xps,yps,20,20,"connection");
+    var connection = new Room(xps,yps,5,5,"connection");
     rooms.push(connection);
 
     // update current position to the end of the line, figure
