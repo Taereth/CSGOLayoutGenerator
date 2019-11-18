@@ -11,7 +11,8 @@ var minY = -mapSize/2+20;
 
 var centerVector;
 
-
+//Actual Rooms to be drawn
+var actualRooms = [];
 
 var areas = [];
 var rooms = [];
@@ -64,6 +65,12 @@ function setup() {
     groupPoints(paths[i]);
   }
 
+  //generate rectangles
+
+  for(var i=0;i<groups.length;i++){
+  minimalAreaRectangle(groups[i],5);
+  }
+
 }
 
 function draw() {
@@ -95,8 +102,9 @@ function draw() {
 */
 
     //Draw Map Rectangles
-    for(var i=0;i<groups.length;i++){
-    minimalAreaRectangle(groups[i],5);
+    noStroke();
+    for(var i=0;i<actualRooms.length;i++){
+      actualRooms[i].draw();
     }
 
 
@@ -379,7 +387,6 @@ function groupPoints(path){
       groups.push(pushgroup);
     }
 
-    console.log(groups);
 
 }
 
@@ -404,30 +411,71 @@ function minimalAreaRectangle(points, size){
 
   noStroke();
 
+  var roomcolor;
+  var important;
+
   if(points.includes(rooms[0].vector)==true){
-    console.log("duh");
-    fill("#90b286");
+
+    roomcolor=color("#90b286");
+    important=true;
     size--;
   }
   else if(points.includes(rooms[1].vector)==true){
-    console.log("duh");
-    fill("#90b286");
+
+    roomcolor=color("#90b286");
+    important=true;
     size--;
   }
   else if(points.includes(rooms[2].vector)==true){
-    console.log("duh");
-    fill("#b46d64");
+
+    roomcolor=color("#b46d64");
+    important=true;
     size++;
   }
   else if(points.includes(rooms[3].vector)==true){
-    console.log("duh");
-    fill("#b46d64");
+
+    roomcolor=color("#b46d64");
+    important=true;
     size++;
   }
   else{
-    fill(color("#909090"));
+    roomcolor=color("#909090");
   }
 
-  quad(minimalX-size,minimalY-size,maximalX+size,minimalY-size,maximalX+size,maximalY+size,minimalX-size,maximalY+size);
+  var center=createVector((minimalX-size+maximalX+size)/2,(minimalY-size+maximalY+size)/2);
+  var newactualRoom = new actualRoom(minimalX,minimalY,maximalX,maximalY,size,center,roomcolor,important);
 
+  actualRooms.push(newactualRoom);
+
+
+
+}
+
+class actualRoom{
+  constructor(minimalX,minimalY,maximalX,maximalY,size,center,color,important){
+    this.minimalX=minimalX;
+    this.minimalY=minimalY;
+    this.maximalX=maximalX;
+    this.maximalY=maximalY;
+    this.size=size;
+    this.center=center;
+    this.color=color;
+    this.important=important;
+  }
+  draw(){
+    if(this.important==true){
+      console.log("itstrue");
+      actualRooms.push(actualRooms.splice(actualRooms.indexOf(this), 1)[0]);
+      this.important=false;
+    }
+    else{
+      fill(this.color);
+      quad(this.minimalX-this.size,this.minimalY-this.size,this.maximalX+this.size,this.minimalY-this.size,this.maximalX+this.size,this.maximalY+this.size,this.minimalX-this.size,this.maximalY+this.size);
+      var randomizer = Math.floor(random(0,5));
+
+    
+
+
+    }
+  }
 }
