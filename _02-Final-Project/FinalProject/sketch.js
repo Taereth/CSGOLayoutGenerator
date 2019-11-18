@@ -1,6 +1,6 @@
 // Global var
 
-var mapSize = 500
+var mapSize = 800
 
 //Define max and min values for drawing
 
@@ -51,6 +51,13 @@ function setup() {
   randomPath(rooms[0].vector,rooms[8].vector);
   randomPath(rooms[1].vector,rooms[8].vector);
 
+  //random smaller Paths
+
+  randomPath(rooms[Math.floor(random(0,rooms.length-1))].vector,rooms[Math.floor(random(0,rooms.length-1))].vector);
+  randomPath(rooms[Math.floor(random(0,rooms.length-1))].vector,rooms[Math.floor(random(0,rooms.length-1))].vector);
+  randomPath(rooms[Math.floor(random(0,rooms.length-1))].vector,rooms[Math.floor(random(0,rooms.length-1))].vector);
+  randomPath(rooms[Math.floor(random(0,rooms.length-1))].vector,rooms[Math.floor(random(0,rooms.length-1))].vector);
+
   //Group Points for room drawing
 
   for(var i=0;i<paths.length;i++){
@@ -66,7 +73,9 @@ function draw() {
 
   translate(width/2,height/2);
 
-  drawOutline();
+//TODO DEFUNCT: Adjust outline to mapsize
+
+  //drawOutline();
 
 
     //THIS IS ONLY FOR TESTING AREA PLACEMENT
@@ -84,16 +93,11 @@ function draw() {
 
     }
 */
+
+    //Draw Map Rectangles
     for(var i=0;i<groups.length;i++){
-    minimalAreaRectangle(groups[i]);
+    minimalAreaRectangle(groups[i],5);
     }
-
-
-
-
-
-
-
 
 
 }
@@ -298,7 +302,7 @@ function randN(x,y){
 function randomPath(start,end){
 
   var lineLen =      20;            // length of segments
-  var maxAngle =     radians(90);   // range of random angle towards end
+  var maxAngle =     radians(360);   // range of random angle towards end
   var noiseInc =     5;          // increment in Perlin noise
   var minDistToEnd = 50;            // how close to the end before we quit?
 
@@ -367,7 +371,7 @@ function groupPoints(path){
 
     var size=0
     for(var i=0;i<path.length;i+=size){
-      size=Math.floor(random(3,5));
+      size=Math.floor(random(2,8));
       var pushgroup=path.slice(i,i+size);
       if(i!=0&&i!==1){
         pushgroup.unshift(path[i-2],path[i-1]);
@@ -381,7 +385,7 @@ function groupPoints(path){
 
 //Calculate smallest possible rectangle and draw it ()
 
-function minimalAreaRectangle(points){
+function minimalAreaRectangle(points, size){
 
   var minimalX,minimalY;
   var maximalX,maximalY;
@@ -399,7 +403,31 @@ function minimalAreaRectangle(points){
   maximalY=Math.max(...yarray);
 
   noStroke();
-  fill("white");
-  quad(minimalX-5,minimalY-5,maximalX+5,minimalY-5,maximalX+5,maximalY+5,minimalX-5,maximalY+5);
+
+  if(points.includes(rooms[0].vector)==true){
+    console.log("duh");
+    fill("#90b286");
+    size--;
+  }
+  else if(points.includes(rooms[1].vector)==true){
+    console.log("duh");
+    fill("#90b286");
+    size--;
+  }
+  else if(points.includes(rooms[2].vector)==true){
+    console.log("duh");
+    fill("#b46d64");
+    size++;
+  }
+  else if(points.includes(rooms[3].vector)==true){
+    console.log("duh");
+    fill("#b46d64");
+    size++;
+  }
+  else{
+    fill(color("#909090"));
+  }
+
+  quad(minimalX-size,minimalY-size,maximalX+size,minimalY-size,maximalX+size,maximalY+size,minimalX-size,maximalY+size);
 
 }
