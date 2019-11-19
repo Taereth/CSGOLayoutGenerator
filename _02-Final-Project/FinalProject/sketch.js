@@ -71,6 +71,7 @@ function setup() {
   minimalAreaRectangle(groups[i],5);
   }
 
+
 }
 
 function draw() {
@@ -103,6 +104,7 @@ function draw() {
 
     //Draw Map Rectangles
     noStroke();
+
     for(var i=0;i<actualRooms.length;i++){
       actualRooms[i].draw();
     }
@@ -461,6 +463,7 @@ class actualRoom{
     this.center=center;
     this.color=color;
     this.important=important;
+    this.checkedRoom=findclosestRoom(this);
   }
   draw(){
     if(this.important==true){
@@ -473,9 +476,35 @@ class actualRoom{
       quad(this.minimalX-this.size,this.minimalY-this.size,this.maximalX+this.size,this.minimalY-this.size,this.maximalX+this.size,this.maximalY+this.size,this.minimalX-this.size,this.maximalY+this.size);
       var randomizer = Math.floor(random(0,5));
 
-    
+
+
 
 
     }
   }
+}
+
+function findclosestRoom(checkedRoom){
+
+  var checkedX = checkedRoom.center.x;
+  var checkedY = checkedRoom.center.y;
+  var shortestDistance = 99999;
+  var returnRoom;
+
+
+  for(var i=0;i<actualRooms.length;i++){
+    if(actualRooms[i]!=checkedRoom){
+      if(dist(checkedX,checkedY,actualRooms[i].center.x,actualRooms[i].center.y)<shortestDistance){
+        shortestDistance=dist(checkedX,checkedY,actualRooms[i].center.x,actualRooms[i].center.y);
+        returnRoom=actualRooms[i];
+
+      }
+    }
+    else{
+      //Do nothing.
+    }
+  }
+
+  return returnRoom;
+
 }
