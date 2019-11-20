@@ -106,8 +106,12 @@ function draw() {
     noStroke();
 
     for(var i=0;i<actualRooms.length;i++){
+      actualRooms[i].draw2();
+    }
+    for(var i=0;i<actualRooms.length;i++){
       actualRooms[i].draw();
     }
+
 
 
 }
@@ -464,23 +468,53 @@ class actualRoom{
     this.color=color;
     this.important=important;
     this.checkedRoom=findclosestRoom(this);
+    this.randomizer=Math.floor(random(0,5));
   }
   draw(){
     if(this.important==true){
       console.log("itstrue");
       actualRooms.push(actualRooms.splice(actualRooms.indexOf(this), 1)[0]);
       this.important=false;
+      this.checkedRoom=findclosestRoom(this);
     }
     else{
       fill(this.color);
       quad(this.minimalX-this.size,this.minimalY-this.size,this.maximalX+this.size,this.minimalY-this.size,this.maximalX+this.size,this.maximalY+this.size,this.minimalX-this.size,this.maximalY+this.size);
-      var randomizer = Math.floor(random(0,5));
-
-
-
 
 
     }
+  }
+  draw2(){
+
+
+    if(this.important!=true && this.checkedRoom.important!=true){
+
+      fill(this.color);
+      
+      switch(this.randomizer) {
+        case 1:
+          quad(this.minimalX-this.size,this.minimalY-this.size,this.checkedRoom.minimalX-this.checkedRoom.size,this.checkedRoom.minimalY-this.checkedRoom.size,this.checkedRoom.center.x,this.checkedRoom.center.y,this.center.x,this.center.y);
+          break;
+        case 2:
+          quad(this.maximalX+this.size,this.minimalY-this.size,this.checkedRoom.maximalX+this.checkedRoom.size,this.checkedRoom.minimalY-this.checkedRoom.size,this.checkedRoom.center.x,this.checkedRoom.center.y,this.center.x,this.center.y);
+          break;
+        case 3:
+          quad(this.maximalX+this.size,this.maximalY+this.size,this.checkedRoom.maximalX+this.checkedRoom.size,this.checkedRoom.maximalY+this.checkedRoom.size,this.checkedRoom.center.x,this.checkedRoom.center.y,this.center.x,this.center.y);
+          break;
+        case 4:
+          quad(this.minimalX-this.size,this.maximalY+this.size,this.checkedRoom.minimalX-this.checkedRoom.size,this.checkedRoom.maximalY+this.checkedRoom.size,this.checkedRoom.center.x,this.checkedRoom.center.y,this.center.x,this.center.y);
+          break;
+        case 5:
+          break;
+
+      }
+
+
+    }
+    else{
+      //do nothing.
+    }
+
   }
 }
 
