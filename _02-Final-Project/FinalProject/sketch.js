@@ -56,8 +56,8 @@ function setup() {
 
   randomPath(rooms[Math.floor(random(0,rooms.length-1))].vector,rooms[Math.floor(random(0,rooms.length-1))].vector);
   randomPath(rooms[Math.floor(random(0,rooms.length-1))].vector,rooms[Math.floor(random(0,rooms.length-1))].vector);
-  randomPath(rooms[Math.floor(random(0,rooms.length-1))].vector,rooms[Math.floor(random(0,rooms.length-1))].vector);
-  randomPath(rooms[Math.floor(random(0,rooms.length-1))].vector,rooms[Math.floor(random(0,rooms.length-1))].vector);
+  //randomPath(rooms[Math.floor(random(0,rooms.length-1))].vector,rooms[Math.floor(random(0,rooms.length-1))].vector);
+  //randomPath(rooms[Math.floor(random(0,rooms.length-1))].vector,rooms[Math.floor(random(0,rooms.length-1))].vector);
 
   //Group Points for room drawing
 
@@ -153,6 +153,8 @@ function defineSpawns(){
 
 function defineLongPaths(){
 
+  //This function defines positions for The main roads main intersections and the lower edges and adds them to the list
+
   var TLongBEdge = createVector(randN(rooms[0].vector.x,maxX),randN(rooms[0].vector.y,centerVector.y)); //Edge of Path Long B
   var TLongAEdge = createVector(randN(minX,rooms[0].vector.x),randN(rooms[0].vector.y,centerVector.y)); //Edge of Path Long A
   var outerEdgeB = createVector((TLongBEdge.x+rooms[3].vector.x)/2,(TLongBEdge.y+rooms[3].vector.y)/2); //Center of Edge B and BSite
@@ -171,6 +173,9 @@ function defineLongPaths(){
 }
 
 function defineMid(){
+
+  //This defines a middle position based on the existing positions
+
   var TSpawn = rooms[0];
   var CTSpawn = rooms[1];
   var TLongAEdgeASite = rooms[7];
@@ -182,6 +187,9 @@ function defineMid(){
 }
 
 class Room{
+
+  //This class defines points upon which the rooms are generated. It is not the room itself (TODO: Rename this class and all references to something like "point"), as the class changed function during the process
+
   constructor(centerx,centery,width,height,designation){
     this.vector=createVector(centerx,centery);  //center position of room
     this.width=width; //width of room //TODO CHANGE WIDTH
@@ -211,6 +219,8 @@ class Room{
   }
   draw(){
 
+    //this function is not needed for the final process, but its helpful to have incase you want to check where exactly the points are
+
     fill(this.color);
     quad(this.x1,this.y1,this.x1,this.y2,this.x2,this.y2,this.x2,this.y1);
 
@@ -220,6 +230,10 @@ class Room{
 }
 
 class Area{
+
+  //this defines possible areas where spawns and sites can be generated
+  //note that in order to change the possible positions of spawns and sites, one needs to change the "areamin"-variables in this class
+
   constructor(designation){
 
     this.designation=designation;
@@ -266,6 +280,8 @@ class Area{
   }
   draw(){
 
+    //this function is not needed for the final process, but it is helpful to check where the areas are generated.
+
 
     fill(this.color);
     quad(this.areamaxX,this.areamaxY,this.areamaxX,this.areaminY,this.areaminX,this.areaminY,this.areaminX,this.areamaxY);
@@ -278,12 +294,14 @@ class Area{
 }
 
 function keyPressed() {
+
+  //innate function to make a screensave
+
   if (key == 's' || key == 'S') saveThumb(650, 350);
 }
 
-// Tools
 
-// resize canvas when the window is resized
+// resize canvas when the window is resized, not used atm
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight, false);
 }
@@ -315,9 +333,11 @@ function randN(x,y){
 
 function randomPath(start,end){
 
-  var lineLen =      20;            // length of segments
+  //This function takes in a start and an end point and then generates a random path between them. It is used for all paths. The variables below can be changed to change map generation behaviour. TODO: Implement a UI with which these can be changed
+
+  var lineLen =      25;            // length of segments
   var maxAngle =     radians(360);   // range of random angle towards end
-  var noiseInc =     5;          // increment in Perlin noise
+  var noiseInc =     10;          // increment in Perlin noise
   var minDistToEnd = 50;            // how close to the end before we quit?
 
   var noiseOffset = 0;
@@ -383,6 +403,8 @@ function randomPath(start,end){
 
 function groupPoints(path){
 
+  //This function takes a path that has been generated with randomPath() and splits its points into smaller groups.
+
     var size=0
     for(var i=0;i<path.length;i+=size){
       size=Math.floor(random(2,8));
@@ -399,6 +421,9 @@ function groupPoints(path){
 //Calculate smallest possible rectangle and draw it ()
 
 function minimalAreaRectangle(points, size){
+
+  //This function takes the points from a group generated in groupPoints() and generates its minimal Area Rectangle. It then creates an actualRoom and pushes it into an array. Note, in order to change roomcolor, it has to be adjusted here.
+  //It also assigns an important to spawns and sites, as they need to be drawn last.
 
   var minimalX,minimalY;
   var maximalX,maximalY;
@@ -458,6 +483,9 @@ function minimalAreaRectangle(points, size){
 }
 
 class actualRoom{
+
+  //this defines the room that is drawn in the end. It consists of the minimal Area rectangle defined earlier and holds two drawing functions
+
   constructor(minimalX,minimalY,maximalX,maximalY,size,center,color,important){
     this.minimalX=minimalX;
     this.minimalY=minimalY;
@@ -468,9 +496,24 @@ class actualRoom{
     this.color=color;
     this.important=important;
     this.checkedRoom=findclosestRoom(this);
-    this.randomizer=Math.floor(random(0,5));
+
+    //the following code adds cases to the drawing function, that smooth out the map generation during draw2()
+
+    this.possibleCases = [1,2,3,4,5];
+    this.caseQueue = [];
+    this.randomizer=Math.floor(random(1,5));
+    for(var i=0;i<this.randomizer;i++){
+      var randomCase = Math.floor(random(0,this.possibleCases.length));
+      this.caseQueue.push(this.possibleCases[randomCase]);
+      this.possibleCases.splice(randomCase,1);
+    }
   }
   draw(){
+
+    //This function first checks whether the drawn room holds any points that belong to an important group. In order to have enough area for spawn, these important rooms need to be drawn last.
+    //If the room is important it gets pushed to the end of the draw array.
+    //It then draws the minimum area rectangle defined earlier. In order to make rooms bigger or smaller in general, one needs to add or subtract here.
+
     if(this.important==true){
       console.log("itstrue");
       actualRooms.push(actualRooms.splice(actualRooms.indexOf(this), 1)[0]);
@@ -486,28 +529,37 @@ class actualRoom{
   }
   draw2(){
 
+    //This function is to be used before draw(), not sure why but if used after draw() it screws with the generation.
+    //it takes the minimal area rectangles and applies cases, should they be in the caseQueue defined in the constructor.
+    //these basically smooth out the generation and connect the edges of a MAR to its closest neighbour
+    //It only does this to rooms that are not important.
+
 
     if(this.important!=true && this.checkedRoom.important!=true){
 
       fill(this.color);
-      
-      switch(this.randomizer) {
-        case 1:
-          quad(this.minimalX-this.size,this.minimalY-this.size,this.checkedRoom.minimalX-this.checkedRoom.size,this.checkedRoom.minimalY-this.checkedRoom.size,this.checkedRoom.center.x,this.checkedRoom.center.y,this.center.x,this.center.y);
-          break;
-        case 2:
-          quad(this.maximalX+this.size,this.minimalY-this.size,this.checkedRoom.maximalX+this.checkedRoom.size,this.checkedRoom.minimalY-this.checkedRoom.size,this.checkedRoom.center.x,this.checkedRoom.center.y,this.center.x,this.center.y);
-          break;
-        case 3:
-          quad(this.maximalX+this.size,this.maximalY+this.size,this.checkedRoom.maximalX+this.checkedRoom.size,this.checkedRoom.maximalY+this.checkedRoom.size,this.checkedRoom.center.x,this.checkedRoom.center.y,this.center.x,this.center.y);
-          break;
-        case 4:
-          quad(this.minimalX-this.size,this.maximalY+this.size,this.checkedRoom.minimalX-this.checkedRoom.size,this.checkedRoom.maximalY+this.checkedRoom.size,this.checkedRoom.center.x,this.checkedRoom.center.y,this.center.x,this.center.y);
-          break;
-        case 5:
-          break;
+
+      for(var i=0;i<this.caseQueue.length;i++){
+
+        switch(this.caseQueue[i]) {
+          case 1:
+            quad(this.minimalX-this.size,this.minimalY-this.size,this.checkedRoom.minimalX-this.checkedRoom.size,this.checkedRoom.minimalY-this.checkedRoom.size,this.checkedRoom.center.x,this.checkedRoom.center.y,this.center.x,this.center.y);
+            break;
+          case 2:
+            quad(this.maximalX+this.size,this.minimalY-this.size,this.checkedRoom.maximalX+this.checkedRoom.size,this.checkedRoom.minimalY-this.checkedRoom.size,this.checkedRoom.center.x,this.checkedRoom.center.y,this.center.x,this.center.y);
+            break;
+          case 3:
+            quad(this.maximalX+this.size,this.maximalY+this.size,this.checkedRoom.maximalX+this.checkedRoom.size,this.checkedRoom.maximalY+this.checkedRoom.size,this.checkedRoom.center.x,this.checkedRoom.center.y,this.center.x,this.center.y);
+            break;
+          case 4:
+            quad(this.minimalX-this.size,this.maximalY+this.size,this.checkedRoom.minimalX-this.checkedRoom.size,this.checkedRoom.maximalY+this.checkedRoom.size,this.checkedRoom.center.x,this.checkedRoom.center.y,this.center.x,this.center.y);
+            break;
+          case 5:
+            break;
+        }
 
       }
+
 
 
     }
@@ -519,6 +571,8 @@ class actualRoom{
 }
 
 function findclosestRoom(checkedRoom){
+
+  //this function is used by the actualRoom class to check for the closest neighboring actualRoom.
 
   var checkedX = checkedRoom.center.x;
   var checkedY = checkedRoom.center.y;
