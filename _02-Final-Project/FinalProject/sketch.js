@@ -19,6 +19,8 @@ var rooms = [];
 var paths = [];   //Different Paths (f.e. LongA,LongB);
 var groups = [];  //groups of room vectors that should form drawn rooms together
 
+var cover = []; // array where cover location[0+3i],rotation[1+3i] and size[2+3i] are stored
+
 
 function setup() {
   // Canvas setup
@@ -56,8 +58,7 @@ function setup() {
 
   randomPath(rooms[Math.floor(random(0,rooms.length-1))].vector,rooms[Math.floor(random(0,rooms.length-1))].vector);
   randomPath(rooms[Math.floor(random(0,rooms.length-1))].vector,rooms[Math.floor(random(0,rooms.length-1))].vector);
-  //randomPath(rooms[Math.floor(random(0,rooms.length-1))].vector,rooms[Math.floor(random(0,rooms.length-1))].vector);
-  //randomPath(rooms[Math.floor(random(0,rooms.length-1))].vector,rooms[Math.floor(random(0,rooms.length-1))].vector);
+
 
   //Group Points for room drawing
 
@@ -70,6 +71,9 @@ function setup() {
   for(var i=0;i<groups.length;i++){
   minimalAreaRectangle(groups[i],5);
   }
+
+  //generate cover
+  coverGeneration();
 
 
 }
@@ -86,21 +90,6 @@ function draw() {
   //drawOutline();
 
 
-    //THIS IS ONLY FOR TESTING AREA PLACEMENT
-/*
-  for(var i=0;i<areas.length;i++){
-    areas[i].draw();
-  }
-*/
-    //THIS IS ONLY FOR TESTING ROOM PLACEMENT
-/*
-  for(var i=0;i<rooms.length;i++){
-    rooms[i].draw();
-    stroke("black");
-    text(i,rooms[i].vector.x,rooms[i].vector.y);
-
-    }
-*/
 
     //Draw Map Rectangles
     noStroke();
@@ -108,9 +97,14 @@ function draw() {
     for(var i=0;i<actualRooms.length;i++){
       actualRooms[i].draw2();
     }
+
     for(var i=0;i<actualRooms.length;i++){
       actualRooms[i].draw();
     }
+
+    drawCover();
+
+
 
 
 
@@ -300,7 +294,6 @@ function keyPressed() {
   if (key == 's' || key == 'S') saveThumb(650, 350);
 }
 
-
 // resize canvas when the window is resized, not used atm
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight, false);
@@ -335,9 +328,9 @@ function randomPath(start,end){
 
   //This function takes in a start and an end point and then generates a random path between them. It is used for all paths. The variables below can be changed to change map generation behaviour. TODO: Implement a UI with which these can be changed
 
-  var lineLen =      25;            // length of segments
+  var lineLen =      30;            // length of segments
   var maxAngle =     radians(360);   // range of random angle towards end
-  var noiseInc =     10;          // increment in Perlin noise
+  var noiseInc =     5;          // increment in Perlin noise
   var minDistToEnd = 50;            // how close to the end before we quit?
 
   var noiseOffset = 0;
@@ -594,5 +587,76 @@ function findclosestRoom(checkedRoom){
   }
 
   return returnRoom;
+
+}
+
+function coverGeneration(){
+  stroke(0);
+  for(var i=0;i<actualRooms.length;i++){
+    var actualSize=Math.floor((actualRooms[i].maximalX-actualRooms[i].minimalX)*(actualRooms[i].maximalY-actualRooms[i].minimalY)/100);
+
+    if(typeof actualRooms[i].checkedRoom === "undefined"){
+      var closestRoomSize=0;
+    }
+    else{
+      console.log("heieiei");
+      var closestRoomSize=Math.floor((actualRooms[i].checkedRoom.maximalX-actualRooms[i].checkedRoom.minimalX)*(actualRooms[i].checkedRoom.maximalY-actualRooms[i].checkedRoom.minimalY)/100);
+    }
+
+
+
+    if(actualSize>100){
+      var location = createVector(random(actualRooms[i].minimalX+5,actualRooms[i].maximalX-5),random(actualRooms[i].minimalY+5,actualRooms[i].maximalY-5));
+      var randomrotation = random(0,0);
+      var randomsize = createVector(random(15,60),random(15,60));
+      cover.push(location,randomrotation,randomsize);
+    }
+
+    /*
+
+    else if(actualSize+closestRoomSize>100){
+      var location = createVector(random(Math.min(actualRooms[i].minimalX+5,actualRooms[i].checkedRoom.minimalX+5),Math.max(actualRooms[i].maximalX-5,actualRooms[i].checkedRoom.maximalX-5)),random(Math.min(actualRooms[i].minimalY+5,actualRooms[i].checkedRoom.minimalY+5),Math.max(actualRooms[i].maximalY-5,actualRooms[i].checkedRoom.maximalY-5)));
+      var randomrotation = random(0,0);
+      var randomsize = createVector(random(15,30),random(15,30));
+      cover.push(location,randomrotation,randomsize);
+    }
+
+    */
+
+
+
+  }
+}
+
+function drawCover(){
+
+  for(var i=0;i<cover.length;i+=3){
+    translate(cover[i].x,cover[i].y);
+    rotate(cover[i+1]);
+    fill("black");
+
+    rect(0,0,cover[i+2].x,cover[i+2].y);
+
+    rotate(-cover[i+1]);
+    translate(-cover[i].x,-cover[i].y);
+
+
+
+    for(var j=0;j<i;j+=3){
+      console.log("gey");
+      if(dist(cover[i].x,cover[i].y,cover[j].x,cover[j].y) < 50){
+
+
+
+        //quad(cover[i].x,cover[i].y,cover[i].x+cover[i+2].x,cover[i].y,cover[j].x,cover[j].y+cover[j+2].y,cover[j].x,cover[j].y);
+        //quad(cover[i].x+cover[i+2].x,cover[i].y,cover[i].x+cover[i+2].x,cover[i].y+cover[i+2].y,cover[j].x+cover[j+2].x,cover[j].y+cover[j+2].y,cover[j].x,cover[j].y);
+
+
+      }
+    }
+
+  }
+
+
 
 }
