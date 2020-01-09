@@ -2,6 +2,19 @@
 
 var mapSize = 800
 
+//Interface
+
+let resetButton;
+let mapSizeSlider;
+let segmentlengthSlider;
+let maxAngleSlider;
+let noiseIncSlider;
+let randomPathAmountSlider;
+let roomSizeSlider;
+let coverMaxSizeSlider;
+let coverScarcitySlider;
+let coverCombinationDistanceSlider;
+
 //Define max and min values for drawing
 
 var maxX = mapSize/2-20;
@@ -30,6 +43,8 @@ function setup() {
   var density = displayDensity();
   pixelDensity(density);
 
+  createInterface();
+
   centerVector = createVector(maxX/2,maxY/2);
 
   //Define possible areas for TSpawn,CTSpawn,BombSiteA,BombSiteB
@@ -56,8 +71,10 @@ function setup() {
 
   //random smaller Paths
 
-  randomPath(rooms[Math.floor(random(0,rooms.length-1))].vector,rooms[Math.floor(random(0,rooms.length-1))].vector);
-  randomPath(rooms[Math.floor(random(0,rooms.length-1))].vector,rooms[Math.floor(random(0,rooms.length-1))].vector);
+  for(var i=0;i<randomPathAmountSlider.value();i++){
+    randomPath(rooms[Math.floor(random(0,rooms.length-1))].vector,rooms[Math.floor(random(0,rooms.length-1))].vector);
+  }
+
 
 
   //Group Points for room drawing
@@ -76,9 +93,13 @@ function setup() {
   coverGeneration();
 
 
+
+
 }
 
 function draw() {
+
+
 
   stroke(255);
   background(0);
@@ -94,6 +115,8 @@ function draw() {
     //Draw Map Rectangles
     noStroke();
 
+    drawCover();
+
     for(var i=0;i<actualRooms.length;i++){
       actualRooms[i].draw2();
     }
@@ -103,6 +126,8 @@ function draw() {
     }
 
     drawCover();
+
+    drawInterface();
 
 
 
@@ -299,22 +324,6 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight, false);
 }
 
-// Int conversion
-function toInt(value) {
-  return ~~value;
-}
-
-// Timestamp
-function timestamp() {
-  return Date.now();
-}
-
-// Thumb
-function saveThumb(w, h) {
-  let img = get( width/2-w/2, height/2-h/2, w, h);
-  save(img,'thumb.jpg');
-}
-
 //Normal Distributed number generator
 
 function randN(x,y){
@@ -328,9 +337,9 @@ function randomPath(start,end){
 
   //This function takes in a start and an end point and then generates a random path between them. It is used for all paths. The variables below can be changed to change map generation behaviour. TODO: Implement a UI with which these can be changed
 
-  var lineLen =      30;            // length of segments
-  var maxAngle =     radians(360);   // range of random angle towards end
-  var noiseInc =     5;          // increment in Perlin noise
+  var lineLen =      segmentlengthSlider.value()           // length of segments
+  var maxAngle =     radians(maxAngleSlider.value());   // range of random angle towards end
+  var noiseInc =     noiseIncSlider.value();          // increment in Perlin noise
   var minDistToEnd = 50;            // how close to the end before we quit?
 
   var noiseOffset = 0;
@@ -400,7 +409,7 @@ function groupPoints(path){
 
     var size=0
     for(var i=0;i<path.length;i+=size){
-      size=Math.floor(random(2,8));
+      size=Math.floor(random(2,roomSizeSlider.value()));
       var pushgroup=path.slice(i,i+size);
       if(i!=0&&i!==1){
         pushgroup.unshift(path[i-2],path[i-1]);
@@ -599,29 +608,23 @@ function coverGeneration(){
       var closestRoomSize=0;
     }
     else{
-      console.log("heieiei");
       var closestRoomSize=Math.floor((actualRooms[i].checkedRoom.maximalX-actualRooms[i].checkedRoom.minimalX)*(actualRooms[i].checkedRoom.maximalY-actualRooms[i].checkedRoom.minimalY)/100);
     }
 
 
 
-    if(actualSize>100){
+    if(actualSize>coverScarcitySlider.value()){
       var location = createVector(random(actualRooms[i].minimalX+5,actualRooms[i].maximalX-5),random(actualRooms[i].minimalY+5,actualRooms[i].maximalY-5));
       var randomrotation = random(0,0);
-      var randomsize = createVector(random(15,60),random(15,60));
+      var randomsize = createVector(random(15,coverMaxSizeSlider.value()),random(15,coverMaxSizeSlider.value()));
       cover.push(location,randomrotation,randomsize);
     }
-
-    /*
-
-    else if(actualSize+closestRoomSize>100){
+    else if(actualSize+closestRoomSize>coverScarcitySlider.value()){
       var location = createVector(random(Math.min(actualRooms[i].minimalX+5,actualRooms[i].checkedRoom.minimalX+5),Math.max(actualRooms[i].maximalX-5,actualRooms[i].checkedRoom.maximalX-5)),random(Math.min(actualRooms[i].minimalY+5,actualRooms[i].checkedRoom.minimalY+5),Math.max(actualRooms[i].maximalY-5,actualRooms[i].checkedRoom.maximalY-5)));
       var randomrotation = random(0,0);
-      var randomsize = createVector(random(15,30),random(15,30));
+      var randomsize = createVector(random(15,coverMaxSizeSlider.value()/2),random(15,coverMaxSizeSlider.value()/2));
       cover.push(location,randomrotation,randomsize);
     }
-
-    */
 
 
 
@@ -643,19 +646,180 @@ function drawCover(){
 
 
     for(var j=0;j<i;j+=3){
-      console.log("gey");
-      if(dist(cover[i].x,cover[i].y,cover[j].x,cover[j].y) < 50){
+      if(dist(cover[i].x,cover[i].y,cover[j].x,cover[j].y) < coverCombinationDistanceSlider.value()){
 
+        fill("black");
 
+        quad(cover[i].x,cover[i].y,cover[j].x,cover[j].y,cover[j].x,cover[j].y+cover[j+2].y,cover[i].x,cover[i].y+cover[i+2].y);
+        quad(cover[i].x+cover[i+2].x,cover[i].y,cover[j].x+cover[j+2].x,cover[j].y,cover[j].x+cover[j+2].x,cover[j].y+cover[j+2].y,cover[i].x+cover[i+2].x,cover[i].y+cover[i+2].y);
+        quad(cover[i].x,cover[i].y+cover[i+2].y,cover[j].x,cover[j].y+cover[j+2].y,cover[j].x+cover[j+2].x,cover[j].y+cover[j+2].y,cover[i].x+cover[i+2].x,cover[i].y+cover[i+2].y);
+        quad(cover[i].x,cover[i].y,cover[j].x,cover[j].y,cover[j].x,cover[j].y+cover[j+2].y,cover[i].x,cover[i].y+cover[i+2].y);
 
-        //quad(cover[i].x,cover[i].y,cover[i].x+cover[i+2].x,cover[i].y,cover[j].x,cover[j].y+cover[j+2].y,cover[j].x,cover[j].y);
-        //quad(cover[i].x+cover[i+2].x,cover[i].y,cover[i].x+cover[i+2].x,cover[i].y+cover[i+2].y,cover[j].x+cover[j+2].x,cover[j].y+cover[j+2].y,cover[j].x,cover[j].y);
 
 
       }
     }
 
   }
+
+
+
+}
+
+function reset(){
+
+  mapSize=mapSizeSlider.value();
+
+  maxX = mapSize/2-20;
+  minX = -mapSize/2+20;
+  maxY = mapSize/2-20;
+  minY = -mapSize/2+20;
+
+
+  //Empty all Arrays and restart the algorithm
+
+  actualRooms = [];
+
+  areas = [];
+  rooms = [];
+  paths = [];
+  groups = [];
+
+  cover = [];
+
+  //Define possible areas for TSpawn,CTSpawn,BombSiteA,BombSiteB
+  defineAreas();
+  //Define definitive locations of TSpawn,CTSpawn,BombSiteA,BombSiteB
+  defineSpawns();
+  defineLongPaths();
+  defineMid();
+
+  //Generate Main Paths
+
+  randomPath(rooms[1].vector,rooms[2].vector);
+  randomPath(rooms[1].vector,rooms[3].vector);
+  randomPath(rooms[0].vector,rooms[5].vector);
+  randomPath(rooms[0].vector,rooms[4].vector);
+  randomPath(rooms[4].vector,rooms[6].vector);
+  randomPath(rooms[5].vector,rooms[7].vector);
+  randomPath(rooms[7].vector,rooms[2].vector);
+  randomPath(rooms[6].vector,rooms[3].vector);
+  randomPath(rooms[6].vector,rooms[8].vector);
+  randomPath(rooms[7].vector,rooms[8].vector);
+  randomPath(rooms[0].vector,rooms[8].vector);
+  randomPath(rooms[1].vector,rooms[8].vector);
+
+  //random smaller Paths
+
+
+  for(var i=0;i<randomPathAmountSlider.value();i++){
+    randomPath(rooms[Math.floor(random(0,rooms.length-1))].vector,rooms[Math.floor(random(0,rooms.length-1))].vector);
+  }
+
+  //Group Points for room drawing
+
+  for(var i=0;i<paths.length;i++){
+    groupPoints(paths[i]);
+  }
+
+  //generate rectangles
+
+  for(var i=0;i<groups.length;i++){
+  minimalAreaRectangle(groups[i],5);
+  }
+
+  //generate cover
+  coverGeneration();
+
+}
+
+function createInterface(){
+
+  resetButton = createButton('Generate New Map');
+  resetButton.position(20, 20);
+  resetButton.mousePressed(reset);
+
+  mapSizeSlider = createSlider(1,2000,800);
+  mapSizeSlider.position(25,100);
+  mapSizeSlider.style("width","100px");
+
+  segmentlengthSlider = createSlider(1,60,30);
+  segmentlengthSlider.position(25,150);
+  segmentlengthSlider.style("width","100px");
+
+  maxAngleSlider = createSlider(1,719,360);
+  maxAngleSlider.position(25,200);
+  maxAngleSlider.style("width","100px");
+
+  noiseIncSlider = createSlider(1,49,5);
+  noiseIncSlider.position(25,250);
+  noiseIncSlider.style("width","100px");
+
+  randomPathAmountSlider = createSlider(1,10,2);
+  randomPathAmountSlider.position(25,300);
+  randomPathAmountSlider.style("width","100px");
+
+  roomSizeSlider = createSlider(3,25,8);
+  roomSizeSlider.position(25,350);
+  roomSizeSlider.style("width","100px");
+
+  coverMaxSizeSlider = createSlider(15,120,60);
+  coverMaxSizeSlider.position(25,400);
+  coverMaxSizeSlider.style("width","100px");
+
+  coverScarcitySlider = createSlider(0,200,100);
+  coverScarcitySlider.position(25,450);
+  coverScarcitySlider.style("width","100px");
+
+  coverCombinationDistanceSlider = createSlider(0,200,50);
+  coverCombinationDistanceSlider.position(25,500);
+  coverCombinationDistanceSlider.style("width","100px");
+
+
+
+}
+
+function drawInterface(){
+
+  let s;
+
+  fill("white");
+  stroke("white");
+  text("Map Size", -width/2+25, -height/2+90)
+  s = mapSizeSlider.value();
+  text(s,-width/2+150,-height/2+115);
+
+  text("Path Segment Length", -width/2+25, -height/2+140)
+  s = segmentlengthSlider.value();
+  text(s,-width/2+150,-height/2+165);
+
+  text("Path Segment Max Angle", -width/2+25, -height/2+190)
+  s = maxAngleSlider.value();
+  text(s,-width/2+150,-height/2+215);
+
+  text("Path Segment Noise Increase", -width/2+25, -height/2+240)
+  s = noiseIncSlider.value();
+  text(s,-width/2+150,-height/2+265);
+
+  text("Amount of Smaller Paths", -width/2+25, -height/2+290)
+  s = randomPathAmountSlider.value();
+  text(s,-width/2+150,-height/2+315);
+
+  text("Room Size", -width/2+25, -height/2+340)
+  s = roomSizeSlider.value();
+  text(s,-width/2+150,-height/2+365);
+
+  text("Cover Max Size", -width/2+25, -height/2+390)
+  s = coverMaxSizeSlider.value();
+  text(s,-width/2+150,-height/2+415);
+
+  text("Cover Scarcity", -width/2+25, -height/2+440)
+  s = coverScarcitySlider.value();
+  text(s,-width/2+150,-height/2+465);
+
+  text("Cover Combination Distance", -width/2+25, -height/2+490)
+  s = coverCombinationDistanceSlider.value();
+  text(s,-width/2+150,-height/2+515);
 
 
 
