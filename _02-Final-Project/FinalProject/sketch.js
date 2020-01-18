@@ -821,6 +821,12 @@ function drawInterface(){
   s = coverCombinationDistanceSlider.value();
   text(s,-width/2+150,-height/2+515);
 
+  // Room Designations
+  text("T Spawn", rooms[0].vector.x,rooms[0].vector.y);
+  text("CT Spawn", rooms[1].vector.x,rooms[1].vector.y);
+  text("A Site", rooms[2].vector.x,rooms[2].vector.y);
+  text("B Site", rooms[3].vector.x,rooms[3].vector.y);
+
 
 
 }
